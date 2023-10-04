@@ -29,81 +29,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose = __importStar(require("mongoose"));
 const config_1 = require("./configs/config");
-const fsService = __importStar(require("./fs.service"));
 const User_model_1 = require("./models/User.model");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.get("/users", async function (req, res) {
-    const users = await User_model_1.User.find();
-    return res.json(users);
-});
-app.post("/users", async (req, res) => {
+app.get("/users", async (_req, res, next) => {
     try {
-        const { name, email } = req.body;
-        const users = await fsService.reader();
-        const lastId = users[users.length - 1].id;
-        const newUser = { name, email, id: lastId + 1 };
-        users.push(newUser);
-        await fsService.writer(users);
-        res.status(201).json(newUser);
+        const users = await User_model_1.User.find();
+        return res.json(users);
     }
     catch (e) {
-        res.status(400).json(e.message);
-    }
-});
-app.get("/users/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
-        if (!user) {
-            throw new Error("User not found");
-        }
-        res.json(user);
-    }
-    catch (e) {
-        res.status(404).json(e.message);
-    }
-});
-app.delete("/users/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const users = await fsService.reader();
-        const index = users.findIndex((user) => user.id === Number(id));
-        if (index === -1) {
-            throw new Error("User not found");
-        }
-        users.splice(index, 1);
-        await fsService.writer(users);
-        res.sendStatus(204);
-    }
-    catch (e) {
-        res.status(404).json(e.message);
-    }
-});
-app.put("/users/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, email } = req.body;
-        if (!name || name.length < 2) {
-            throw new Error("Wrong name");
-        }
-        if (!email || !email.includes("@")) {
-            throw new Error("Wrong email");
-        }
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
-        if (!user) {
-            throw new Error("User not found");
-        }
-        user.email = email;
-        user.name = name;
-        await fsService.writer(users);
-        res.status(201).json(user);
-    }
-    catch (e) {
-        res.status(404).json(e.message);
+        next(e);
     }
 });
 const PORT = 5000;
