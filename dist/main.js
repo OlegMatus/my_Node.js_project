@@ -29,85 +29,94 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose = __importStar(require("mongoose"));
 const config_1 = require("./configs/config");
-const fsService = __importStar(require("./fs.service"));
+const api_error_1 = require("./errors/api.error");
 const User_model_1 = require("./models/User.model");
+const user_validator_1 = require("./validators/user.validator");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.get("/users", async function (req, res) {
-    const users = await User_model_1.User.find();
-    return res.json(users);
-});
-app.post("/users", async (req, res) => {
+app.get("/users", async (_req, res, next) => {
     try {
-        const { name, email } = req.body;
-        const users = await fsService.reader();
-        const lastId = users[users.length - 1].id;
-        const newUser = { name, email, id: lastId + 1 };
-        users.push(newUser);
-        await fsService.writer(users);
-        res.status(201).json(newUser);
+        const users = await User_model_1.User.find();
+        return res.json(users);
     }
     catch (e) {
-        res.status(400).json(e.message);
+        next(e);
     }
 });
-app.get("/users/:id", async (req, res) => {
+app.post("/users", async (req, res, next) => {
+    try {
+        const { error, value } = user_validator_1.UserValidator.create.validate(req.body);
+        if (error) {
+            throw new api_error_1.ApiError(error.message, 400);
+        }
+        const createdUser = await User_model_1.User.create(value);
+        res.status(201).json(createdUser);
+    }
+    catch (e) {
+        next(e);
+    }
+});
+app.get("/users/:id", async (req, res, next) => {
     try {
         const { id } = req.params;
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
+        if (!mongoose.isObjectIdOrHexString(id)) {
+            throw new api_error_1.ApiError("Not Valid ID", 400);
+        }
+        const user = await User_model_1.User.findById(id);
         if (!user) {
-            throw new Error("User not found");
+            throw new api_error_1.ApiError("User not found", 404);
         }
         res.json(user);
     }
     catch (e) {
-        res.status(404).json(e.message);
+        next(e);
     }
 });
-app.delete("/users/:id", async (req, res) => {
+app.delete("/users/:id", async (req, res, next) => {
     try {
         const { id } = req.params;
-        const users = await fsService.reader();
-        const index = users.findIndex((user) => user.id === Number(id));
-        if (index === -1) {
-            throw new Error("User not found");
+        if (!mongoose.isObjectIdOrHexString(id)) {
+            throw new api_error_1.ApiError("Not Valid ID", 400);
         }
-        users.splice(index, 1);
-        await fsService.writer(users);
+        const user = await User_model_1.User.findById(id);
+        if (!user) {
+            throw new api_error_1.ApiError("User not found", 404);
+        }
+        await User_model_1.User.deleteOne({ _id: id });
         res.sendStatus(204);
     }
     catch (e) {
-        res.status(404).json(e.message);
+        next(e);
     }
 });
-app.put("/users/:id", async (req, res) => {
+app.put("/users/:id", async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, email } = req.body;
-        if (!name || name.length < 2) {
-            throw new Error("Wrong name");
+        if (!mongoose.isObjectIdOrHexString(id)) {
+            throw new api_error_1.ApiError("Not Valid ID", 400);
         }
-        if (!email || !email.includes("@")) {
-            throw new Error("Wrong email");
+        const { error, value } = user_validator_1.UserValidator.update.validate(req.body);
+        if (!error) {
+            throw new api_error_1.ApiError(error.message, 400);
         }
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
+        const user = await User_model_1.User.findByIdAndUpdate(id, value, {
+            returnDocument: "after",
+        });
         if (!user) {
-            throw new Error("User not found");
+            throw new api_error_1.ApiError("User not found", 404);
         }
-        user.email = email;
-        user.name = name;
-        await fsService.writer(users);
         res.status(201).json(user);
     }
     catch (e) {
-        res.status(404).json(e.message);
+        next(e);
     }
 });
-const PORT = 5000;
-app.listen(PORT, async () => {
+app.use((error, _req, res, _next) => {
+    const status = error.status || 500;
+    res.status(status).json(error.message);
+});
+app.listen(config_1.configs.PORT, async () => {
     await mongoose.connect(config_1.configs.DB_URI);
-    console.log(`Server has successfully started on PORT ${PORT}`);
+    console.log(`Server has successfully started on PORT ${config_1.configs.PORT}`);
 });
