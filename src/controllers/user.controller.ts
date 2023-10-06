@@ -16,16 +16,16 @@ class UserController {
       next(e);
     }
   }
-  public async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const createdUser = await userService.createUser(req.body);
-
-      res.status(201).json(createdUser);
-    } catch (e) {
-      // res.status(400).json(e.message);
-      next(e);
-    }
-  }
+  // public async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  //   try {
+  //     const createdUser = await userService.createUser(req.body);
+  //
+  //     res.status(201).json(createdUser);
+  //   } catch (e) {
+  //     // res.status(400).json(e.message);
+  //     next(e);
+  //   }
+  // }
   public async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.res.locals;

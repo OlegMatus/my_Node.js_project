@@ -10,17 +10,24 @@ export class UserValidator {
   static email = joi.string().regex(regexConstant.EMAIL).trim();
   static password = joi.string().regex(regexConstant.PASSWORD).trim();
 
-  static create = joi.object({
-    name: this.firstName.required(),
-    age: this.age.required(),
-    genders: this.genders.required(),
-    email: this.email.required(),
-    password: this.password.required(),
-  });
+  // static create = joi.object({
+  //   name: this.firstName.required(),
+  //   age: this.age.required(),
+  //   genders: this.genders.required(),
+  //   email: this.email.required(),
+  //   password: this.password.required(),
+  // });
 
   static update = joi.object({
     name: this.firstName,
     age: this.age,
     genders: this.genders,
+  });
+  static register = joi.object({
+    name: this.firstName.required(),
+    age: this.age.required(),
+    genders: this.genders.required(),
+    email: this.email.required(),
+    password: this.password.required(),
   });
 }
