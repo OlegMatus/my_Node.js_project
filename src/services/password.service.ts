@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+
 import { configs } from "../configs/config";
 
 class PasswordService {

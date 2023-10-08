@@ -29,11 +29,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose = __importStar(require("mongoose"));
 const config_1 = require("./configs/config");
+const auth_router_1 = require("./routers/auth.router");
 const user_router_1 = require("./routers/user.router");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use("/users", user_router_1.userRouter);
+app.use("/auth", auth_router_1.authRouter);
 app.use((error, _req, res, _next) => {
     const status = error.status || 500;
     res.status(status).json(error.message);

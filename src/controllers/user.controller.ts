@@ -11,6 +11,7 @@ class UserController {
   ): Promise<Response<IUser[]>> {
     try {
       const users = await userService.getAll();
+
       return res.json(users);
     } catch (e) {
       next(e);

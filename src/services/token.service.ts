@@ -1,6 +1,7 @@
 import * as jwt from "jsonwebtoken";
 
 import { configs } from "../configs/config";
+import { ApiError } from "../errors/api.error";
 import { ITokenPayload, ITokensPair } from "../types/token.types";
 
 class TokenService {
@@ -15,6 +16,19 @@ class TokenService {
       accessToken,
       refreshToken,
     };
+  }
+
+  public async generateActionToken(payload: ITokenPayload): string {
+    return jwt.sign(payload, configs.JWT_ACTION_SECRET, {
+      expiresIn: "1d",
+    });
+  }
+  public checkActionToken(token: string): ITokenPayload {
+    try {
+      return jwt.verify(token, configs.JWT_ACTION_SECRET) as ITokenPayload;
+    } catch (e) {
+      throw new ApiError("Token not valid!", 401);
+    }
   }
 }
 
