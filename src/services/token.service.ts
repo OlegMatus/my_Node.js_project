@@ -18,7 +18,7 @@ class TokenService {
     };
   }
 
-  public async generateActionToken(payload: ITokenPayload): string {
+  public generateActionToken(payload: ITokenPayload): string {
     return jwt.sign(payload, configs.JWT_ACTION_SECRET, {
       expiresIn: "1d",
     });

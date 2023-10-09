@@ -17,7 +17,11 @@ class AuthController {
       next(e);
     }
   }
-  public async login(req: Request, res: Response, next: NextFunction): Promise<Response<ITokensPair>> {
+  public async login(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response<ITokensPair>> {
     try {
       const tokensPair = await authService.login(req.body);
 
