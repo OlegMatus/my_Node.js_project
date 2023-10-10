@@ -1,4 +1,5 @@
 import { model, Schema, Types } from "mongoose";
+import { IToken } from "../types/token.types";
 
 import { User } from "./User.model";
 
@@ -18,4 +19,4 @@ const tokensSchema = new Schema({
   },
 });
 
-export const Token = model("token", tokensSchema);
+export const Token = model<IToken>("token", tokensSchema);

@@ -2,8 +2,9 @@ import { EActionTokenType } from "../enums/activationTokenType.enum";
 import { EEmailAction } from "../enums/email.action.enum";
 import { ApiError } from "../errors/api.error";
 import { actionTokenRepository } from "../repositories/action-token.repository";
+import { tokenRepository } from "../repositories/token.repository";
 import { userRepository } from "../repositories/user.repository";
-import { ITokensPair } from "../types/token.types";
+import { ITokenPayload, ITokensPair } from "../types/token.types";
 import { IUser, IUserCredentials } from "../types/user.type";
 import { emailService } from "./email.service";
 import { passwordService } from "./password.service";
@@ -53,6 +54,24 @@ class AuthService {
         userId: user._id,
         name: user.name,
       });
+      await tokenRepository.create({ ...tokensPair, _userId: user._id });
+
+      return tokensPair;
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+  public async refresh(
+    payload: ITokenPayload,
+    refreshToken: string,
+  ): Promise<ITokensPair> {
+    try {
+      const tokensPair = await tokenService.generateTokenPair(payload);
+
+      await Promise.all([
+        tokenRepository.create({ ...tokensPair, _userId: payload.userId }),
+        tokenRepository.deleteOne({ refreshToken }),
+      ]);
 
       return tokensPair;
     } catch (e) {

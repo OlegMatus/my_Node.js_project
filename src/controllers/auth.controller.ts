@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { authService } from "../services/auth.service";
-import { ITokensPair } from "../types/token.types";
+import { ITokenPayload, ITokensPair } from "../types/token.types";
 
 class AuthController {
   public async register(
@@ -24,6 +24,21 @@ class AuthController {
   ): Promise<Response<ITokensPair>> {
     try {
       const tokensPair = await authService.login(req.body);
+
+      return res.json(tokensPair);
+    } catch (e) {
+      next(e);
+    }
+  }
+  public async refresh(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response<ITokensPair>> {
+    try {
+      const tokenPayload = req.res.locals.payloadToken as ITokenPayload;
+      const refreshToken = req.res.locals.refreshToken as string;
+      const tokensPair = await authService.refresh(tokenPayload, refreshToken);
 
       return res.json(tokensPair);
     } catch (e) {

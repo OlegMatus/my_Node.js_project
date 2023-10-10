@@ -18,9 +18,13 @@ class TokenService {
     };
   }
 
+  public async checkToken(token: string): Promise<ITokenPayload> {
+    return jwt.verify(token, configs.JWT_ACCESS_SECRET) as ITokenPayload;
+  }
+
   public generateActionToken(payload: ITokenPayload): string {
     return jwt.sign(payload, configs.JWT_ACTION_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "1h",
     });
   }
   public checkActionToken(token: string): ITokenPayload {
