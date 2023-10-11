@@ -1,5 +1,8 @@
+import { ObjectId } from "mongodb";
+
 import { EActionTokenType } from "../enums/activationTokenType.enum";
 import { EEmailAction } from "../enums/email.action.enum";
+import { EUserStatus } from "../enums/user-status.enum";
 import { ApiError } from "../errors/api.error";
 import { actionTokenRepository } from "../repositories/action-token.repository";
 import { tokenRepository } from "../repositories/token.repository";
@@ -50,8 +53,8 @@ class AuthService {
       if (!isMatched) {
         throw new ApiError("Invalid credentials provided", 401);
       }
-      const tokensPair = await tokenService.generateTokenPair({
-        userId: user._id,
+      const tokensPair = tokenService.generateTokenPair({
+        userId: user._id.toString(),
         name: user.name,
       });
       await tokenRepository.create({ ...tokensPair, _userId: user._id });
@@ -66,10 +69,16 @@ class AuthService {
     refreshToken: string,
   ): Promise<ITokensPair> {
     try {
-      const tokensPair = await tokenService.generateTokenPair(payload);
+      const tokensPair = tokenService.generateTokenPair({
+        userId: payload.userId,
+        name: payload.name,
+      });
 
       await Promise.all([
-        tokenRepository.create({ ...tokensPair, _userId: payload.userId }),
+        tokenRepository.create({
+          ...tokensPair,
+          _userId: new ObjectId(payload.userId),
+        }),
         tokenRepository.deleteOne({ refreshToken }),
       ]);
 
@@ -78,6 +87,43 @@ class AuthService {
       throw new ApiError(e.message, e.status);
     }
   }
+  public async logout(accessToken: string): Promise<void> {
+    try {
+      await tokenRepository.deleteOne({ accessToken });
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+  public async logoutAll(userId: string): Promise<void> {
+    try {
+      await tokenRepository.deleteManyByUserId(userId);
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+  public async activate(token: string): Promise<void> {
+    try {
+      const payload = tokenService.checkActionToken(token);
+      const entity = actionTokenRepository.findOne({ token });
+      if (!entity) {
+        throw new ApiError("Not valid token", 400);
+      }
+      await Promise.all([
+        actionTokenRepository.deleteManyByUserIdAndType(
+          payload.userId,
+          EActionTokenType.activate,
+        ),
+        userRepository.setStatus(payload.userId, EUserStatus.active),
+      ]);
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+  // async sendActivationToken(tokenPayload: ITokenPayload): Promise<void> {
+  //   try {
+  //
+  //   } catch (e) {}
+  // }
 }
 
 export const authService = new AuthService();

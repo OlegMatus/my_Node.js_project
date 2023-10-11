@@ -16,7 +16,7 @@ router.post(
 );
 router.post(
   "/login",
-  commonMiddleware.isBodyValid(UserValidator.login),
+  // commonMiddleware.isBodyValid(UserValidator.login),
   authController.login,
 );
 router.post(
@@ -24,6 +24,14 @@ router.post(
   authMiddleware.checkRefreshToken,
   authController.refresh,
 );
+router.post("/logout", authMiddleware.checkAccessToken, authController.logout);
+// router.post("/logoutAll", authMiddleware.checkAccessToken, authController.logout);
 router.post("/activate");
+router.post(
+  "/change-password",
+  commonMiddleware.isBodyValid(UserValidator.changePassword),
+  authMiddleware.checkAccessToken,
+  authController.changePassword,
+);
 
 export const authRouter = router;

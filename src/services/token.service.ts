@@ -5,12 +5,12 @@ import { ApiError } from "../errors/api.error";
 import { ITokenPayload, ITokensPair } from "../types/token.types";
 
 class TokenService {
-  public async generateTokenPair(payload: ITokenPayload): Promise<ITokensPair> {
+  public generateTokenPair(payload: ITokenPayload): ITokensPair {
     const accessToken = jwt.sign(payload, configs.JWT_ACCESS_SECRET, {
-      expiresIn: "4h",
+      expiresIn: "30m",
     });
     const refreshToken = jwt.sign(payload, configs.JWT_REFRESH_SECRET, {
-      expiresIn: "30d",
+      expiresIn: "1h",
     });
     return {
       accessToken,
@@ -18,13 +18,27 @@ class TokenService {
     };
   }
 
-  public async checkToken(token: string): Promise<ITokenPayload> {
-    return jwt.verify(token, configs.JWT_ACCESS_SECRET) as ITokenPayload;
+  public checkToken(token: string, type: "access" | "refresh"): ITokenPayload {
+    try {
+      let secret: string;
+
+      switch (type) {
+        case "access":
+          secret = configs.JWT_ACCESS_SECRET;
+          break;
+        case "refresh":
+          secret = configs.JWT_REFRESH_SECRET;
+          break;
+      }
+      return jwt.verify(token, secret) as ITokenPayload;
+    } catch (e) {
+      throw new ApiError("Token is not valid", 401);
+    }
   }
 
   public generateActionToken(payload: ITokenPayload): string {
     return jwt.sign(payload, configs.JWT_ACTION_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "1d",
     });
   }
   public checkActionToken(token: string): ITokenPayload {

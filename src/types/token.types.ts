@@ -4,7 +4,7 @@ import { EActionTokenType } from "../enums/activationTokenType.enum";
 import { IUser } from "./user.type";
 
 export interface ITokenPayload {
-  userId: Types.ObjectId;
+  userId: string;
   name: string;
 }
 export interface ITokensPair {

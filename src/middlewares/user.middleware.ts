@@ -17,14 +17,10 @@ class UserMiddleware {
       next(e);
     }
   }
-  public async getByIdOrThrow(
-    req: Request,
-    _res: Response,
-    next: NextFunction,
-  ) {
+  public async getByIdOrThrow(req: Request, _res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const user = await userRepository.findById(id);
+      const { userId } = req.params;
+      const user = await userRepository.findById(userId);
       if (!user) {
         throw new ApiError("User not found", 404);
       }

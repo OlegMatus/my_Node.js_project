@@ -38,7 +38,10 @@ app.use("/users", user_router_1.userRouter);
 app.use("/auth", auth_router_1.authRouter);
 app.use((error, _req, res, _next) => {
     const status = error.status || 500;
-    res.status(status).json(error.message);
+    res.status(status).json({
+        message: error.message,
+        status: error.status,
+    });
 });
 app.listen(config_1.configs.PORT, async () => {
     await mongoose.connect(config_1.configs.DB_URI);

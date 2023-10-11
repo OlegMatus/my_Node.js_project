@@ -16,7 +16,7 @@ class AuthMiddleware {
         throw new ApiError("Not Token", 401);
       }
 
-      const payload = await tokenService.checkToken(refreshToken);
+      const payload = tokenService.checkToken(refreshToken, "refresh");
 
       const entity = await tokenRepository.findOne({ refreshToken });
       if (!entity) {
@@ -26,6 +26,32 @@ class AuthMiddleware {
       req.res.locals.payloadToken = payload;
 
       req.res.locals.refreshToken = refreshToken;
+      next();
+    } catch (e) {
+      next(e);
+    }
+  }
+  public async checkAccessToken(
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const accessToken = req.get("Authorization");
+      if (!accessToken) {
+        throw new ApiError("Not Token", 401);
+      }
+
+      const payload = tokenService.checkToken(accessToken, "access");
+
+      const entity = await tokenRepository.findOne({ accessToken });
+      if (!entity) {
+        throw new ApiError("Token not valid", 401);
+      }
+
+      req.res.locals.payloadToken = payload;
+
+      req.res.locals.accessToken = accessToken;
       next();
     } catch (e) {
       next(e);
