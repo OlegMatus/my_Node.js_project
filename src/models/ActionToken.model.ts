@@ -13,6 +13,7 @@ const tokensSchema = new Schema(
     type: {
       type: String,
       enum: EActionTokenType,
+      required: true,
     },
     _userId: {
       type: Types.ObjectId,

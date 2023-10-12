@@ -7,8 +7,11 @@ class UserRepository {
   public async getAll(): Promise<IUser[]> {
     return await User.find();
   }
-  public async getOneByParams(params: FilterQuery<IUser>) {
-    return await User.findOne(params);
+  public async getOneByParams(
+    params: FilterQuery<IUser>,
+    selection?: string[],
+  ) {
+    return await User.findOne(params, selection);
   }
   public async findById(id: string): Promise<IUser> {
     return await User.findById(id);
@@ -19,7 +22,10 @@ class UserRepository {
   public async register(dto: IUserCredentials): Promise<IUser> {
     return await User.create(dto);
   }
-  public async updateUser(userId: string, dto: Partial<IUser>): Promise<IUser> {
+  public async updateOneById(
+    userId: string,
+    dto: Partial<IUser>,
+  ): Promise<IUser> {
     return await User.findByIdAndUpdate(userId, dto, {
       returnDocument: "after",
     });

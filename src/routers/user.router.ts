@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 import { userController } from "../controllers/user.controller";
 import { ApiError } from "../errors/api.error";
+import { authMiddleware } from "../middlewares/auth.middleware";
 import { commonMiddleware } from "../middlewares/common.middleware";
 import { userMiddleware } from "../middlewares/user.middleware";
 import { User } from "../models/User.model";
@@ -11,11 +12,12 @@ import { UserValidator } from "../validators/user.validator";
 const router = Router();
 
 router.get("/", userController.getAll);
-// router.post(
-//   "/",
-//   commonMiddleware.isBodyValid(UserValidator.create),
-//   userController.createUser,
-// );
+router.get("/me", authMiddleware.checkAccessToken, userController.getMe);
+router.post(
+  "/",
+  commonMiddleware.isBodyValid(UserValidator.create),
+  userController.createUser,
+);
 router.get(
   "/:id",
   commonMiddleware.isIdValid("id"),

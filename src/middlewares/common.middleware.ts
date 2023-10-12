@@ -20,7 +20,7 @@ class CommonMiddleware {
     };
   }
   public isBodyValid(validator: ObjectSchema) {
-    return (req: Request, _res: Response, next: NextFunction): void => {
+    return (req: Request, _res: Response, next: NextFunction) => {
       try {
         const { error, value } = validator.validate(req.body);
         if (error) {
