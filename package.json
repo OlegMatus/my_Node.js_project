@@ -7,9 +7,6 @@
     "start": "rimraf dist && tsc-watch --onSuccess \"npm run watch\"",
     "watch": "nodemon \"src/main.ts\" --watch \"./src\""
   },
-  "keywords": [],
-  "auth": "",
-  "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",

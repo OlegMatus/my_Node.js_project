@@ -48,7 +48,7 @@ class EmailService {
   ) {
     const { subject, templateName } = templates[emailAction];
 
-    context.frontUrl = configs.FRONT_URL;
+    // context.frontUrl = configs.FRONT_URL;
 
     const mailOptions = {
       to: email,
