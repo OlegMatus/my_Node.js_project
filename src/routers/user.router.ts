@@ -21,7 +21,6 @@ router.get(
   userMiddleware.getByIdOrThrow,
   userController.getById,
 );
-
 router.put(
   "/:userId",
   authMiddleware.checkAccessToken,

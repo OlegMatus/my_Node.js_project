@@ -8,7 +8,7 @@
     "watch": "nodemon \"src/main.ts\" --watch \"./src\""
   },
   "keywords": [],
-  "author": "",
+  "auth": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -17,7 +17,7 @@
     "hbs": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.3",
-    "nodemailer": "^6.9.5",
+    "nodemailer": "^6.9.6",
     "nodemailer-express-handlebars": "^6.1.0",
     "start-dev": "^1.0.0"
   },
