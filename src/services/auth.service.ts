@@ -12,37 +12,36 @@ import { ISetNewPassword, IUser, IUserCredentials } from "../types/user.type";
 import { emailService } from "./email.service";
 import { passwordService } from "./password.service";
 import { tokenService } from "./token.service";
-
 class AuthService {
   public async register(dto: IUser): Promise<void> {
     try {
       const hashedPassword = await passwordService.hash(dto.password);
+
       const user = await userRepository.register({
         ...dto,
         password: hashedPassword,
       });
-
       const actionToken = tokenService.generateActionToken(
-        {
-          userId: user._id,
-          name: user.name,
-        },
-        EActionTokenType.activate,
+          {
+            userId: user._id,
+            name: user.name,
+          },
+          EActionTokenType.activate,
       );
       await actionTokenRepository.create({
         token: actionToken,
         type: EActionTokenType.activate,
         _userId: user._id,
       });
-      await emailService.sendMail(
-        "netflix.murch2023@gmail.com",
-        EEmailAction.REGISTER,
-        { name: dto.name, actionToken },
-      );
+      await emailService.sendMail(dto.email, EEmailAction.REGISTER, {
+        name: dto.name,
+        actionToken,
+      });
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
   }
+
   public async login(dto: IUserCredentials): Promise<ITokensPair> {
     try {
       const user = await userRepository.getOneByParams({ email: dto.email }, [
@@ -51,13 +50,15 @@ class AuthService {
       if (!user) {
         throw new ApiError("Invalid credentials provided", 401);
       }
+
       const isMatched = await passwordService.compare(
-        dto.password,
-        user.password,
+          dto.password,
+          user.password,
       );
       if (!isMatched) {
         throw new ApiError("Invalid credentials provided", 401);
       }
+
       const tokensPair = tokenService.generateTokenPair({
         userId: user._id.toString(),
         name: user.name,
@@ -69,9 +70,10 @@ class AuthService {
       throw new ApiError(e.message, e.status);
     }
   }
+
   public async refresh(
-    payload: ITokenPayload,
-    refreshToken: string,
+      payload: ITokenPayload,
+      refreshToken: string,
   ): Promise<ITokensPair> {
     try {
       const tokensPair = tokenService.generateTokenPair({
@@ -92,6 +94,7 @@ class AuthService {
       throw new ApiError(e.message, e.status);
     }
   }
+
   public async logout(accessToken: string): Promise<void> {
     try {
       await tokenRepository.deleteOne({ accessToken });
@@ -99,6 +102,7 @@ class AuthService {
       throw new ApiError(e.message, e.status);
     }
   }
+
   public async logoutAll(userId: string): Promise<void> {
     try {
       await tokenRepository.deleteManyByUserId(userId);
@@ -106,20 +110,21 @@ class AuthService {
       throw new ApiError(e.message, e.status);
     }
   }
+
   public async activate(token: string): Promise<void> {
     try {
       const payload = tokenService.checkActionToken(
-        token,
-        EActionTokenType.activate,
+          token,
+          EActionTokenType.activate,
       );
-      const entity = actionTokenRepository.findOne({ token });
+      const entity = await actionTokenRepository.findOne({ token });
       if (!entity) {
         throw new ApiError("Not valid token", 400);
       }
       await Promise.all([
         actionTokenRepository.deleteManyByUserIdAndType(
-          payload.userId,
-          EActionTokenType.activate,
+            payload.userId,
+            EActionTokenType.activate,
         ),
         userRepository.setStatus(payload.userId, EUserStatus.active),
       ]);
@@ -127,18 +132,20 @@ class AuthService {
       throw new ApiError(e.message, e.status);
     }
   }
+
   public async sendActivationToken(tokenPayload: ITokenPayload): Promise<void> {
     try {
       const user = await userRepository.findById(tokenPayload.userId);
       if (user.status !== EUserStatus.inactive) {
         throw new ApiError("User can not be activated", 403);
       }
+
       const actionToken = tokenService.generateActionToken(
-        {
-          userId: user._id,
-          name: user.name,
-        },
-        EActionTokenType.activate,
+          {
+            userId: user._id,
+            name: user.name,
+          },
+          EActionTokenType.activate,
       );
       await actionTokenRepository.create({
         token: actionToken,
@@ -157,10 +164,10 @@ class AuthService {
   public async forgotPassword(user: IUser): Promise<void> {
     try {
       const actionToken = tokenService.generateActionToken(
-        {
-          userId: user._id,
-        },
-        EActionTokenType.forgotPassword,
+          {
+            userId: user._id,
+          },
+          EActionTokenType.forgotPassword,
       );
 
       await Promise.all([
@@ -179,13 +186,13 @@ class AuthService {
   }
 
   public async setForgotPassword(
-    actionToken: string,
-    newPassword: string,
+      actionToken: string,
+      newPassword: string,
   ): Promise<void> {
     try {
       const payload = tokenService.checkActionToken(
-        actionToken,
-        EActionTokenType.forgotPassword,
+          actionToken,
+          EActionTokenType.forgotPassword,
       );
       const entity = await actionTokenRepository.findOne({
         token: actionToken,
@@ -208,15 +215,15 @@ class AuthService {
   }
 
   public async setNewPassword(
-    body: ISetNewPassword,
-    userId: string,
+      body: ISetNewPassword,
+      userId: string,
   ): Promise<void> {
     try {
       const user = await userRepository.findById(userId);
 
       const isMatch = await passwordService.compare(
-        body.password,
-        user.password,
+          body.password,
+          user.password,
       );
       if (!isMatch) {
         throw new ApiError("Invalid password", 400);
