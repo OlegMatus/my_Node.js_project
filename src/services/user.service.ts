@@ -1,11 +1,29 @@
 import { ApiError } from "../errors/api.error";
 import { userRepository } from "../repositories/user.repository";
+import { IPaginationResponse, IQuery } from "../types/pagination.type";
 import { IUser } from "../types/user.type";
 
 class UserService {
   public async getAll(): Promise<IUser[]> {
     const users = await userRepository.getAll();
     return users;
+  }
+  public async getAllWithPagination(
+    query: IQuery,
+  ): Promise<IPaginationResponse<IUser>> {
+    try {
+      const [users, itemsFound] =
+        await userRepository.getAllWithPagination(query);
+
+      return {
+        page: +query.page,
+        limit: +query.limit,
+        itemsFound,
+        data: users,
+      };
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
   }
   public async createUser(dto: IUser): Promise<IUser> {
     await this.isEmailUniq(dto.email);
