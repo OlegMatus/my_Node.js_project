@@ -30,7 +30,6 @@ const express_1 = __importDefault(require("express"));
 const mongoose = __importStar(require("mongoose"));
 const swaggerUi = __importStar(require("swagger-ui-express"));
 const config_1 = require("./configs/config");
-const crons_1 = require("./crons");
 const auth_router_1 = require("./routers/auth.router");
 const user_router_1 = require("./routers/user.router");
 const swaggerJson = __importStar(require("./utils/swagger.json"));
@@ -49,6 +48,5 @@ app.use((error, _req, res, _next) => {
 });
 app.listen(config_1.configs.PORT, async () => {
     await mongoose.connect(config_1.configs.DB_URI);
-    (0, crons_1.cronRunner)();
     console.log(`Server has successfully started on PORT ${config_1.configs.PORT}`);
 });

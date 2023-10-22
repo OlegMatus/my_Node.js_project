@@ -17,7 +17,7 @@ router.post(
 );
 router.post(
   "/login",
-  commonMiddleware.isBodyValid(UserValidator.login),
+  // commonMiddleware.isBodyValid(UserValidator.login),
   authController.login,
 );
 router.post(

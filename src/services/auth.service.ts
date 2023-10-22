@@ -35,7 +35,7 @@ class AuthService {
         _userId: user._id,
       });
       await emailService.sendMail(
-        "netflix20murch23@gmail.com",
+        "netflix.murch2023@gmail.com",
         EEmailAction.REGISTER,
         {
           name: dto.name,
