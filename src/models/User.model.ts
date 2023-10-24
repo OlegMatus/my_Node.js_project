@@ -33,7 +33,11 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
+      select: false,
       required: true,
+    },
+    avatar: {
+      type: String,
     },
   },
   {
@@ -41,4 +45,4 @@ const userSchema = new Schema(
     versionKey: false,
   },
 );
-export const User = model<IUser>("user", userSchema);
+export const User = model<IUser, IUser>("user", userSchema);
